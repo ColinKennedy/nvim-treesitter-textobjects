@@ -10,6 +10,9 @@
 (decorated_definition
   (class_definition) @class.outer) @class.outer.start
 
+(expression_statement
+ (string (string_content) @documentation.inner)) @documentation.outer
+
 (while_statement
   body: (block)? @loop.inner) @loop.outer
 
