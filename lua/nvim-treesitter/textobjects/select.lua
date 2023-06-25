@@ -7,6 +7,17 @@ local ts_utils = require "nvim-treesitter.ts_utils"
 
 local M = {}
 
+local function get_char_before_position(bufnr, row, col)
+  if row == nil then
+    return nil
+  end
+  local ok, char = pcall(vim.api.nvim_buf_get_text, bufnr, row, col - 1, row, col, {})
+  if ok then
+    return char[1]
+  end
+end
+
+
 local function get_char_after_position(bufnr, row, col)
   if row == nil then
     return nil
@@ -16,6 +27,29 @@ local function get_char_after_position(bufnr, row, col)
     return char[1]
   end
 end
+
+local function is_whitespace_before(bufnr, row, col)
+  if col == 0
+  then
+    return true
+  end
+  -- print("checking row and col")
+  -- print(row, col)
+  local char = get_char_before_position(bufnr, row, col)
+  -- print("got charkacters", char)
+  if char == nil then
+    return false
+  end
+  if char == "" then
+    if row == vim.api.nvim_buf_line_count(bufnr) - 1 then
+      return false
+    else
+      return true
+    end
+  end
+  return string.match(char, "%s")
+end
+
 
 local function is_whitespace_after(bufnr, row, col)
   local char = get_char_after_position(bufnr, row, col)
@@ -65,6 +99,20 @@ end
 
 local function include_surrounding_whitespace(bufnr, textobject, selection_mode)
   local start_row, start_col, end_row, end_col = unpack(textobject)
+  local original_row = start_row
+  local original_column = start_col
+
+  while is_whitespace_before(bufnr, start_row, start_col) do
+    start_row, start_col = next_position(bufnr, start_row, start_col, false)
+  end
+
+  if original_row ~= (start_row + 1)
+  then
+    return { start_row + 1, 0, end_row, end_col }
+  end
+
+  start_row = original_row
+  start_col = original_column
   local extended = false
   while is_whitespace_after(bufnr, end_row, end_col) do
     extended = true
@@ -72,7 +120,7 @@ local function include_surrounding_whitespace(bufnr, textobject, selection_mode)
   end
   if extended then
     -- don't extend in both directions
-    return { start_row, start_col, end_row, end_col }
+    return { start_row, start_col, end_row, 0 }
   end
   local next_row, next_col = next_position(bufnr, start_row, start_col, false)
   while is_whitespace_after(bufnr, next_row, next_col) do
