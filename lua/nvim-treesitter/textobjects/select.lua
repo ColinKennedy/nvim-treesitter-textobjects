@@ -106,6 +106,11 @@ local function include_surrounding_whitespace(bufnr, textobject, selection_mode)
     start_row, start_col = next_position(bufnr, start_row, start_col, false)
   end
 
+  if not start_row
+  then
+    start_row = -1
+  end
+
   if original_row ~= (start_row + 1)
   then
     return { start_row + 1, 0, end_row, end_col }
