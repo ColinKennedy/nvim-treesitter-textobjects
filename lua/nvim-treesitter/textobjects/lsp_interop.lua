@@ -7,7 +7,7 @@ local M = {}
 local floating_win
 
 -- NOTE: This can be replaced with `vim.islist` once Neovim 0.9 support is dropped
-local islist = vim.fn.has "nvim-0.10" == 1 and vim.islist or vim.tbl_islist
+local islist = vim.fn.has("nvim-0.10") == 1 and vim.islist or vim.tbl_islist
 
 -- peeking is not interruptive so it is okay to use in visual mode.
 -- in fact, visual mode peeking is very helpful because you may not want
